@@ -1,0 +1,15 @@
+fastapi==0.78.0
+uvicorn==0.17.6
+langchain==0.6.8
+PyMuPDF==1.19.1
+nltk==3.7
+transformers==4.20.1
+gtts==2.2.3
+pydub==0.25.1
+google-cloud-texttospeech==2.9.0
+python-dotenv==0.20.0
+tqdm==4.64.0        # For progress tracking during processing tasks
+openai==0.28.0      # Used for OpenAI GPT models in script generation
+PyPDF2==3.0.0       # Enhances PDF text extraction alongside PyMuPDF
+aiofiles==22.1.0    # Required for FastAPI to handle file uploads efficiently
+httpx==0.24.1       # Used for making asynchronous HTTP requests (e.g., API calls)
