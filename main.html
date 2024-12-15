@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Generator</title>
+    <style>
+        /* Reset default browser styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f8fd;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        /* Section container */
+        section {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form styling */
+        .form-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-container h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        input[type="file"] {
+            width: 70%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="file"]:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #b5d9b5;
+            cursor: not-allowed;
+        }
+
+        /* Output Styling */
+        .output {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #eaf1f2;
+        }
+
+        .output pre {
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+        }
+
+        /* Loading Message */
+        .loading {
+            padding: 20px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Audio Player Styling */
+        audio {
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            input[type="file"] {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Podcast Generator</h1>
+    </header>
+    <section>
+        <div class="form-container">
+            <h2>Upload PDF</h2>
+            <input type="file" id="pdf-file" />
+            <button onclick="uploadPDF()">Upload PDF</button>
+            <div id="upload-response" class="output"></div>
+        </div>
+
+        <div id="loading-message" class="loading" style="display:none;">
+            <p>Processing your request. Please wait...</p>
+        </div>
+
+        <div id="final-response" class="output" style="display:none;">
+            <h3>Enhanced Audio:</h3>
+            <audio id="enhanced-audio" controls></audio>
+        </div>
+    </section>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000';  // Update with the correct FastAPI server URL
+
+        // Upload PDF
+        function uploadPDF() {
+            const fileInput = document.getElementById('pdf-file');
+            if (!fileInput.files.length) {
+                alert("Please select a PDF file to upload.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            console.log("Uploading PDF...");
+
+            fetch(`${apiUrl}/upload-pdf/`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("PDF uploaded successfully", data);
+                document.getElementById('upload-response').textContent = JSON.stringify(data, null, 2);
+                const pdfPath = data.pdf_path;
+                processPDF(pdfPath);
+            })
+            .catch(error => {
+                console.error("Error uploading PDF:", error);
+                alert('Error uploading PDF: ' + error);
+            });
+        }
+
+        // Process the uploaded PDF (all steps)
+        function processPDF(pdfPath) {
+            console.log("Starting the processing flow for the PDF...");
+
+            // Show loading message
+            document.getElementById('loading-message').style.display = 'block';
+
+            // Extract text
+            fetch(`${apiUrl}/extract-text/?pdf_path=${encodeURIComponent(pdfPath)}`, { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Text extraction failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Text extracted:", data);
+                // Clean text
+                return fetch(`${apiUrl}/clean-text/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Text cleaning failed');
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Summarize text
+                return fetch(`${apiUrl}/summarize-text/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Text summarization failed');
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Generate script
+                return fetch(`${apiUrl}/generate-script/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Script generation failed');
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Convert script to audio
+                return fetch(`${apiUrl}/convert-to-audio/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Audio conversion failed');
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Combine audio
+                return fetch(`${apiUrl}/combine-audio/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Audio combining failed');
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Enhance audio
+                return fetch(`${apiUrl}/enhance-audio/`, { method: 'POST' });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Audio enhancement failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Enhanced audio path:", data.enhanced_audio_path);
+                // Hide loading message and show the final response
+                document.getElementById('loading-message').style.display = 'none';
+                document.getElementById('final-response').style.display = 'block';
+                const enhancedAudioPath = data.enhanced_audio_path;
+                const audioElement = document.getElementById('enhanced-audio');
+                audioElement.src = enhancedAudioPath;
+            })
+            .catch(error => {
+                console.error("Error processing PDF:", error);
+                document.getElementById('loading-message').style.display = 'none';
+                alert('Error processing PDF: ' + error);
+            });
+        }
+    </script>
+</body>
+</html>
