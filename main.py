@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 # Set the path for Google Cloud credentials
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "E:/Projects_Langchain/PREMIUM_KEYS_DONT_SHARE/gctts_private_key.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "Add the path to the google application credentials"
 
 # Initialize the FastAPI app
 app = FastAPI()
