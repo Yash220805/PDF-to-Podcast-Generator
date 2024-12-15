@@ -157,7 +157,7 @@ from google.cloud import texttospeech
 from pydub import AudioSegment
 
 # Set the path to the service account key file
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "E:/Projects_Langchain/PREMIUM_KEYS_DONT_SHARE/gctts_private_key.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "Add path to your google credentials json file"
 
 # Ensure the audio_files directory exists
 os.makedirs("E:/Projects_Langchain/Group_projects/Podcast_Generator/audio_files", exist_ok=True)
