@@ -120,7 +120,7 @@ Navigate to the backend/ folder:
 
      bashCopy codecd backend  pip install -r requirements.txt   `
 
-### 4\. Start the FastAPI Backend
+### 4\. Start the FastAPI Backend (main.py)
 
 Run the FastAPI application:
 
@@ -130,7 +130,7 @@ The backend will run on http://127.0.0.1:8000.
 
 ### 5\. Serve the Frontend
 
-Simply open the index.html file in your browser, or host it using a web server.
+Simply open the main.html file in your browser, or host it using a web server.
 
 Usage
 -----
